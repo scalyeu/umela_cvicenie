@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<title>Interaktívny dashboard pre Iris dataset – sprievodný dokument</title>
+<style>
+  @page { size: A4; margin: 16mm 18mm 18mm 18mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Liberation Sans", "DejaVu Sans", Arial, sans-serif; font-size: 10.5pt;
+         line-height: 1.4; color: #1f2933; margin: 0; }
+  code, pre { font-family: "Liberation Mono", "DejaVu Sans Mono", monospace; font-size: 9.2pt; }
+  pre { background: #f4f6f8; border: 1px solid #dfe3e8; border-radius: 4px; padding: 8px 10px; margin: 6px 0; }
+  .kicker { text-align: center; color: #2c5f8a; font-weight: bold; letter-spacing: 0.08em; font-size: 9pt; }
+  h1 { text-align: center; font-size: 19pt; margin: 4px 0 2px; color: #1b3a57; }
+  .subtitle { text-align: center; color: #52606d; margin-bottom: 8px; }
+  .meta { display: flex; justify-content: space-between; border-top: 1px solid #cfd6dd; border-bottom: 1px solid #cfd6dd;
+          padding: 5px 2px; margin: 10px 0 14px; font-size: 10pt; }
+  h2 { font-size: 13pt; color: #1b3a57; margin: 16px 0 6px; border-bottom: 1px solid #cfd6dd; padding-bottom: 2px; }
+  p { margin: 5px 0; }
+  ul { margin: 4px 0 4px 18px; padding: 0; }
+  li { margin: 2px 0; }
+  figure { margin: 8px 0 10px; page-break-inside: avoid; }
+  figure img { width: 100%; border: 1px solid #cfd6dd; border-radius: 3px; display: block; }
+  figure.main img { width: 78%; margin: 0 auto; }
+  h2 { page-break-after: avoid; }
+  .keep { page-break-inside: avoid; }
+  figcaption { font-size: 9.2pt; color: #52606d; margin-top: 4px; }
+  .two { display: flex; gap: 10px; }
+  .two figure { flex: 1; margin: 0; }
+  table.cb { width: 100%; border-collapse: collapse; font-size: 9.2pt; page-break-inside: avoid; }
+  table.cb th, table.cb td { border: 1px solid #cfd6dd; padding: 5px 6px; vertical-align: top; text-align: left; }
+  table.cb th { background: #eaf1f8; color: #1b3a57; }
+  .diagram { width: 100%; margin: 6px 0 2px; page-break-inside: avoid; }
+  .box-in   { fill: #dbe9f6; stroke: #2c5f8a; }
+  .box-cb   { fill: #e8eef5; stroke: #2b3e50; }
+  .box-be   { fill: #fdebd9; stroke: #c96a1b; }
+  .box-out  { fill: #e3f2e6; stroke: #2f8f4e; }
+  .diagram rect { stroke-width: 1.2; rx: 4; }
+  .diagram text { font-size: 10.5px; fill: #1f2933; }
+  .diagram .t { font-weight: bold; }
+  .diagram .m { font-family: "Liberation Mono", monospace; font-size: 9.5px; }
+  .diagram .lbl { font-size: 9px; fill: #52606d; font-style: italic; }
+  .diagram line, .diagram polyline { stroke: #52606d; stroke-width: 1.2; fill: none; }
+  .diagram .dash { stroke-dasharray: 4 3; }
+  .check li::before { content: "\2713\00a0"; color: #2f8f4e; font-weight: bold; }
+  .check li { list-style: none; }
+  .check { margin-left: 4px; }
+  .pb { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="kicker">UMELÁ INTELIGENCIA – LABORATÓRNA ÚLOHA</div>
+<h1>Interaktívny dashboard pre Iris dataset</h1>
+<div class="subtitle">Plotly Dash – načítanie, filtrovanie a zobrazenie dát · sprievodný dokument k projektu <code>dash_iris</code></div>
+<div class="meta">
+  <span><b>Meno:</b> Tomáš Žigo</span>
+  <span><b>Dátum:</b> 21. 9. 2026</span>
+</div>
+
+<h2>1&nbsp; Cieľ a riešenie</h2>
+<p>Webová aplikácia v Plotly Dash s Bootstrap témou (balík <code>dash-bootstrap-components</code>). Iris dataset sa
+zo zadanej CSV URL načíta až po stlačení tlačidla <b>Načítať dáta</b>; pri štarte aplikácie sa <code>pandas.read_csv()</code>
+nevolá. Načítaný DataFrame drží modul <code>backend/data_service.py</code> (bez <code>dcc.Store</code>).
+Štyri komponenty <code>dcc.RangeSlider</code> filtrujú dáta podľa <code>sepal_length</code>, <code>sepal_width</code>,
+<code>petal_length</code> a <code>petal_width</code>; podmienky sa spájajú logickým AND. Jeden vyfiltrovaný DataFrame
+napĺňa naraz informačný panel, stĺpcový graf počtov druhov (s hodnotou nad každým stĺpcom) a tabuľku
+<code>dash_table.DataTable</code> so stránkovaním po 10 riadkoch.</p>
+<p><b>Rozšírenia:</b> textové pole pre vlastnú CSV URL s kontrolou požadovaných stĺpcov (chybná URL alebo nevhodný
+súbor zobrazia správu a umožnia nový pokus) a tlačidlo <b>Obnoviť filtre</b>, ktoré vráti slidery na celý rozsah datasetu.</p>
+
+<h2>2&nbsp; Snímky aplikácie</h2>
+<figure class="main">
+  <img src="img/02_po_nacitani.png" alt="Aplikácia po načítaní celého datasetu">
+  <figcaption><b>Obr. 1:</b> Aplikácia po stlačení „Načítať dáta“. Načítaných 150 záznamov, filtre nastavené na skutočné
+  minimá a maximá datasetu (napr. Sepal Length 4.3 – 7.9), graf ukazuje 50 / 50 / 50, tabuľka má 15 strán.</figcaption>
+</figure>
+
+<figure class="main">
+  <img src="img/03_po_filtri.png" alt="Aplikácia po použití filtrov">
+  <figcaption><b>Obr. 2:</b> Po použití dvoch filtrov naraz (Petal Length 3.5 – 6.9 a Sepal Width 2.0 – 3.2).
+  Panel, graf aj tabuľka zobrazujú rovnaký výsledok: 87 záznamov (setosa 0, versicolor 45, virginica 42), tabuľka má 9 strán.</figcaption>
+</figure>
+
+<div class="two">
+  <figure>
+    <img src="img/04_bez_vysledku.png" alt="Stav bez výsledkov">
+    <figcaption><b>Obr. 3:</b> Stav bez výsledkov (Sepal Width 2.0 – 2.0 a Petal Length 6.9 – 6.9): počet 0, tri
+    stĺpce s nulovou výškou a oznamom, prázdna tabuľka. Aplikácia nespadne.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/05_chyba.png" alt="Chyba pri načítaní">
+    <figcaption><b>Obr. 4:</b> Chyba pri načítaní (neexistujúca URL): zrozumiteľná správa v stave, počty „–“,
+    filtre zostanú vypnuté a tlačidlo umožní nový pokus.</figcaption>
+  </figure>
+</div>
+
+<h2 class="pb">3&nbsp; Štruktúra projektu a tok dát</h2>
+<pre>dash_iris/
+|-- app.py                  vytvorenie aplikácie, Dash Pages, Bootstrap téma FLATLY, navbar
+|-- requirements.txt        dash, plotly, dash-bootstrap-components, pandas
+|-- README.md               inštalácia a spustenie
+|-- assets/styles.css       drobné vizuálne úpravy
+|-- pages/home.py           rozloženie hlavnej stránky (karty, slidery, graf, tabuľka)
+|-- backend/data_service.py načítanie a kontrola CSV, filter (AND), počty druhov
+`-- callbacks/
+    |-- iris_callbacks.py   registrácia callbackov 1 – 3
+    `-- figures.py          stĺpcový graf a prázdny graf s oznamom</pre>
+
+<svg class="diagram" viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tok dát medzi komponentmi, callbackmi a backendom">
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8 z" fill="#52606d"/>
+    </marker>
+  </defs>
+
+  <!-- Callback 1 -->
+  <text x="10" y="14" class="t">Callback 1 – načítanie dát</text>
+  <rect class="box-in" x="10" y="30" width="160" height="50"/>
+  <text x="90" y="50" text-anchor="middle">tlačidlo „Načítať dáta“ (Input)</text>
+  <text x="90" y="66" text-anchor="middle">CSV URL (State)</text>
+  <rect class="box-cb" x="200" y="30" width="140" height="50"/>
+  <text x="270" y="50" text-anchor="middle" class="t">načítavací callback</text>
+  <text x="270" y="66" text-anchor="middle" class="m">load_or_reset()</text>
+  <rect class="box-be" x="370" y="30" width="160" height="50"/>
+  <text x="450" y="50" text-anchor="middle" class="t">backend</text>
+  <text x="450" y="66" text-anchor="middle" class="m">load_iris_data(url)</text>
+  <rect class="box-out" x="560" y="8" width="190" height="40"/>
+  <text x="655" y="25" text-anchor="middle" class="t">Output: stav, celkový počet</text>
+  <text x="655" y="40" text-anchor="middle">load-status, total-count</text>
+  <rect class="box-out" x="560" y="58" width="190" height="40"/>
+  <text x="655" y="75" text-anchor="middle" class="t">Output: rozsahy 4 sliderov</text>
+  <text x="655" y="90" text-anchor="middle">min, max, value, disabled</text>
+  <line x1="170" y1="55" x2="200" y2="55" marker-end="url(#ah)"/>
+  <line x1="340" y1="55" x2="370" y2="55" marker-end="url(#ah)"/>
+  <line x1="530" y1="55" x2="560" y2="28" marker-end="url(#ah)"/>
+  <line x1="530" y1="55" x2="560" y2="78" marker-end="url(#ah)"/>
+  <!-- reťazenie: zmena value sliderov spustí callback 2 -->
+  <polyline class="dash" points="655,98 655,114 90,114 90,158" marker-end="url(#ah)"/>
+  <text x="372" y="110" text-anchor="middle" class="lbl">zmena value sliderov automaticky spustí callback 2</text>
+
+  <!-- Callback 2 -->
+  <text x="200" y="152" class="t">Callback 2 – filtrovanie</text>
+  <rect class="box-in" x="10" y="160" width="160" height="50"/>
+  <text x="90" y="180" text-anchor="middle">4 × RangeSlider</text>
+  <text x="90" y="196" text-anchor="middle">value (Input)</text>
+  <rect class="box-cb" x="200" y="160" width="140" height="50"/>
+  <text x="270" y="180" text-anchor="middle" class="t">filtrovací callback</text>
+  <text x="270" y="196" text-anchor="middle" class="m">apply_filters()</text>
+  <rect class="box-be" x="370" y="160" width="160" height="50"/>
+  <text x="450" y="175" text-anchor="middle" class="t">backend (AND filter)</text>
+  <text x="450" y="190" text-anchor="middle" class="m">filter_data()</text>
+  <text x="450" y="204" text-anchor="middle" class="m">species_counts()</text>
+  <rect class="box-out" x="560" y="126" width="190" height="34"/>
+  <text x="655" y="141" text-anchor="middle" class="t">Output: textové počty</text>
+  <text x="655" y="155" text-anchor="middle">filtered-count, podiel, rozsahy</text>
+  <rect class="box-out" x="560" y="168" width="190" height="34"/>
+  <text x="655" y="183" text-anchor="middle" class="t">Output: dcc.Graph</text>
+  <text x="655" y="197" text-anchor="middle">species-graph.figure</text>
+  <rect class="box-out" x="560" y="210" width="190" height="34"/>
+  <text x="655" y="225" text-anchor="middle" class="t">Output: DataTable</text>
+  <text x="655" y="239" text-anchor="middle">table.data, table.page_current</text>
+  <line x1="170" y1="185" x2="200" y2="185" marker-end="url(#ah)"/>
+  <line x1="340" y1="185" x2="370" y2="185" marker-end="url(#ah)"/>
+  <line x1="530" y1="185" x2="560" y2="143" marker-end="url(#ah)"/>
+  <line x1="530" y1="185" x2="560" y2="185" marker-end="url(#ah)"/>
+  <line x1="530" y1="185" x2="560" y2="227" marker-end="url(#ah)"/>
+  <polyline class="dash" points="655,244 655,258 90,258 90,272" marker-end="url(#ah)"/>
+  <text x="372" y="254" text-anchor="middle" class="lbl">zmena dát tabuľky alebo prepnutie strany spustí callback 3</text>
+
+  <!-- Callback 3 -->
+  <rect class="box-in" x="10" y="274" width="160" height="50"/>
+  <text x="90" y="294" text-anchor="middle">DataTable page_current, data</text>
+  <text x="90" y="310" text-anchor="middle">(Input), page_size (State)</text>
+  <rect class="box-cb" x="200" y="274" width="140" height="50"/>
+  <text x="270" y="294" text-anchor="middle" class="t">callback 3 – strana</text>
+  <text x="270" y="310" text-anchor="middle" class="m">show_page_info()</text>
+  <rect class="box-out" x="370" y="274" width="190" height="50"/>
+  <text x="465" y="294" text-anchor="middle" class="t">Output: „Zobrazená strana x/y“</text>
+  <text x="465" y="310" text-anchor="middle">page-info</text>
+  <line x1="170" y1="299" x2="200" y2="299" marker-end="url(#ah)"/>
+  <line x1="340" y1="299" x2="370" y2="299" marker-end="url(#ah)"/>
+</svg>
+<p style="font-size:9.2pt;color:#52606d;margin-top:0">Obr. 5: Tok dát. Modré bloky sú vstupy (Input/State), sivé callbacky, oranžové backend, zelené výstupy (Output).
+Prerušované šípky ukazujú reťazenie: výstup jedného callbacku je vstupom ďalšieho.</p>
+
+<div class="keep">
+<h2>4&nbsp; Prehľad callbackov (<code>callbacks/iris_callbacks.py</code>)</h2>
+<table class="cb">
+  <tr><th style="width:3%">#</th><th style="width:13%">Callback</th><th style="width:18%">Input</th><th style="width:10%">State</th><th style="width:20%">Output</th><th>Čo robí</th></tr>
+  <tr>
+    <td>1</td><td><code>load_or_reset</code><br><small>prevent_initial_call, running</small></td>
+    <td>tlačidlo <b>Načítať dáta</b> (<code>n_clicks</code>); tlačidlo <b>Obnoviť filtre</b> (<code>n_clicks</code>)</td>
+    <td>CSV URL (<code>url-input.value</code>)</td>
+    <td>stav načítania, celkový počet, <code>disabled</code> tlačidla Obnoviť, <code>min / max / value / disabled</code> každého zo 4 sliderov</td>
+    <td>Po kliknutí načíta CSV cez backend, skontroluje stĺpce a nastaví filtre podľa skutočných hodnôt datasetu; počas behu je tlačidlo zablokované (<code>running</code>), pri chybe zobrazí správu a vráti stav pred načítaním; tlačidlo Obnoviť iba vráti slidery na celý rozsah.</td>
+  </tr>
+  <tr>
+    <td>2</td><td><code>apply_filters</code><br><small>prevent_initial_call</small></td>
+    <td><code>value</code> všetkých 4 RangeSliderov</td>
+    <td>–</td>
+    <td>vyfiltrovaný počet, podiel v %, aktuálne rozsahy pri slideroch, <code>figure</code> grafu, <code>data</code> a <code>page_current</code> tabuľky</td>
+    <td>Z hodnôt sliderov zostaví AND filter, backend vráti jeden vyfiltrovaný DataFrame a z neho sa naraz naplní panel, stĺpcový graf (vždy tri druhy, chýbajúci má 0) aj tabuľka; bez načítaných dát vráti prázdny stav.</td>
+  </tr>
+  <tr>
+    <td>3</td><td><code>show_page_info</code></td>
+    <td><code>page_current</code> a <code>data</code> tabuľky</td>
+    <td><code>page_size</code> tabuľky</td>
+    <td>text „Zobrazená strana x/y“ v paneli</td>
+    <td>Pri stránkovaní alebo zmene filtra prepočíta aktuálnu stranu a počet strán.</td>
+  </tr>
+</table>
+</div>
+
+<h2>5&nbsp; Kontrola pred odovzdaním</h2>
+<ul class="check">
+  <li>Pred kliknutím nie je dataset načítaný; graf ukazuje výzvu, tabuľka je prázdna, filtre vypnuté.</li>
+  <li>Po „Načítať dáta“ je 150 záznamov, filtre 4.3 – 7.9 / 2.0 – 4.4 / 1.0 – 6.9 / 0.1 – 2.5, tlačidlo počas načítania zablokované.</li>
+  <li>Jeden filter (Petal Length ≥ 3.5 → 97 záznamov) aj kombinácia filtrov (→ 87): panel, graf a tabuľka sa zhodujú.</li>
+  <li>Rozsahy bez zhody → počet 0, prázdna tabuľka, graf s oznamom; aplikácia beží ďalej.</li>
+  <li>Obnovenie stránky vráti aplikáciu do stavu pred načítaním dát.</li>
+  <li>Neplatná URL (HTTP 404) aj CSV bez potrebných stĺpcov zobrazia správu; nový pokus s platnou URL prebehne správne.</li>
+</ul>
+
+<h2>6&nbsp; Spustenie</h2>
+<pre>pip install -r requirements.txt
+python app.py        # aplikácia beží na http://127.0.0.1:8050</pre>
+
+</body>
+</html>

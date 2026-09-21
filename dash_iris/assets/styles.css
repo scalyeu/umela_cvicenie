@@ -1,0 +1,13 @@
+/* Drobné vizuálne úpravy; základ vzhľadu dodáva dash-bootstrap-components. */
+
+.info-row {
+    margin-bottom: 0.35rem;
+}
+
+.card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+#table .dash-spreadsheet-container {
+    font-size: 0.9rem;
+}
