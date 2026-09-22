@@ -1,10 +1,8 @@
-"""Vstupný bod aplikácie Iris Data Explorer (Plotly Dash + Bootstrap)."""
-
 import dash
 import dash_bootstrap_components as dbc
 from dash import html
 
-import callbacks.iris_callbacks  # noqa: F401 – registrácia callbackov
+import callbacks.iris_callbacks  # noqa: F401  (bez tohoto importu sa callbacky nezaregistruju)
 
 app = dash.Dash(
     __name__,
@@ -15,11 +13,15 @@ app = dash.Dash(
 
 navbar = dbc.Navbar(
     dbc.Container(
-        [dbc.NavbarBrand("Iris Data Explorer", className="fw-bold"),
-         html.Span("Dashboard", className="text-white-50")],
+        [
+            dbc.NavbarBrand("Iris Data Explorer", className="fw-bold"),
+            html.Span("Dashboard", className="text-white-50"),
+        ],
         fluid=True,
     ),
-    color="primary", dark=True, className="mb-3",
+    color="primary",
+    dark=True,
+    className="mb-3",
 )
 
 app.layout = html.Div([navbar, dbc.Container(dash.page_container, fluid=True)])

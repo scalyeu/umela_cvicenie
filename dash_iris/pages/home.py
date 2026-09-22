@@ -1,5 +1,3 @@
-"""Rozloženie hlavnej stránky dashboardu (Dash Pages)."""
-
 import dash
 import dash_bootstrap_components as dbc
 from dash import dash_table, dcc, html
@@ -17,32 +15,40 @@ SLIDER_LABELS = {
 }
 
 
-def info_row(label, value_id, initial="–"):
-    """Jeden riadok informačného panela: popis + hodnota s vlastným id."""
+def info_row(label, value_id):
     return html.Div(
-        [html.Span(f"{label}: ", className="text-muted"),
-         html.Span(initial, id=value_id, className="fw-bold")],
+        [
+            html.Span(label + ": ", className="text-muted"),
+            html.Span("-", id=value_id, className="fw-bold"),
+        ],
         className="info-row",
     )
 
 
 def slider_block(col):
-    """Popis, aktuálny rozsah a RangeSlider pre jeden číselný stĺpec."""
     return dbc.Col(
         [
             html.Div(
-                [html.Span(SLIDER_LABELS[col], className="fw-semibold"),
-                 html.Span("–", id=f"range-{col}", className="text-muted small")],
+                [
+                    html.Span(SLIDER_LABELS[col], className="fw-semibold"),
+                    html.Span("-", id="range-" + col, className="text-muted small"),
+                ],
                 className="d-flex justify-content-between",
             ),
-            # Rozsah 0–1 je len dočasný; skutočné hodnoty nastaví načítavací callback
+            # min/max 0-1 je len docasne, spravne hodnoty nastavi prvy callback
             dcc.RangeSlider(
-                id=f"slider-{col}", min=0, max=1, step=0.1, value=[0, 1],
-                disabled=True, allowCross=False,
+                id="slider-" + col,
+                min=0,
+                max=1,
+                step=0.1,
+                value=[0, 1],
+                disabled=True,
+                allowCross=False,
                 tooltip={"placement": "bottom"},
             ),
         ],
-        md=6, className="mb-3",
+        md=6,
+        className="mb-3",
     )
 
 
@@ -55,10 +61,15 @@ overview_card = dbc.Card(
             info_row("Podiel z celku", "filtered-pct"),
             info_row("Zobrazená strana", "page-info"),
             html.Div(
-                [html.Span("Stav: ", className="text-muted"),
-                 dcc.Loading(html.Span("dáta nie sú načítané", id="load-status",
-                                       className="fw-bold"),
-                             type="dot", parent_style={"display": "inline-block"})],
+                [
+                    html.Span("Stav: ", className="text-muted"),
+                    dcc.Loading(
+                        html.Span("dáta nie sú načítané", id="load-status",
+                                  className="fw-bold"),
+                        type="dot",
+                        parent_style={"display": "inline-block"},
+                    ),
+                ],
                 className="info-row",
             ),
             html.Hr(),
@@ -66,9 +77,11 @@ overview_card = dbc.Card(
             dbc.Input(id="url-input", value=IRIS_URL, type="url", size="sm",
                       className="mb-2"),
             html.Div(
-                [dbc.Button("Načítať dáta", id="load-button", color="primary"),
-                 dbc.Button("Obnoviť filtre", id="reset-button", color="secondary",
-                            outline=True, disabled=True)],
+                [
+                    dbc.Button("Načítať dáta", id="load-button", color="primary"),
+                    dbc.Button("Obnoviť filtre", id="reset-button", color="secondary",
+                               outline=True, disabled=True),
+                ],
                 className="d-flex gap-2 flex-wrap",
             ),
         ]
@@ -80,7 +93,7 @@ graph_card = dbc.Card(
     dbc.CardBody(
         dcc.Graph(
             id="species-graph",
-            figure=empty_figure("Stlačte tlačidlo „Načítať dáta“"),
+            figure=empty_figure('Stlačte tlačidlo "Načítať dáta"'),
             config={"displayModeBar": False},
             style={"height": "340px"},
         )
@@ -92,8 +105,11 @@ filter_card = dbc.Card(
     dbc.CardBody(
         [
             html.H5("Filtrovanie rozsahov", className="card-title"),
-            html.P("Riadok zostane vo výsledku, iba ak spĺňa všetky štyri rozsahy naraz (AND).",
-                   className="text-muted small"),
+            html.P(
+                "Riadok zostane vo výsledku, iba ak spĺňa všetky štyri rozsahy "
+                "naraz (AND).",
+                className="text-muted small",
+            ),
             dbc.Row([slider_block(col) for col in NUMERIC_COLS]),
         ]
     )
@@ -103,8 +119,10 @@ table_card = dbc.Card(
     dbc.CardBody(
         [
             html.Div(
-                [html.H5("Vyfiltrované dáta", className="card-title mb-0"),
-                 html.Span("10 záznamov na strane", className="text-muted small")],
+                [
+                    html.H5("Vyfiltrované dáta", className="card-title mb-0"),
+                    html.Span("10 záznamov na strane", className="text-muted small"),
+                ],
                 className="d-flex justify-content-between align-items-center mb-3",
             ),
             dash_table.DataTable(
@@ -132,8 +150,10 @@ table_card = dbc.Card(
 layout = html.Div(
     [
         dbc.Row(
-            [dbc.Col(overview_card, md=4, className="mb-3"),
-             dbc.Col(graph_card, md=8, className="mb-3")],
+            [
+                dbc.Col(overview_card, md=4, className="mb-3"),
+                dbc.Col(graph_card, md=8, className="mb-3"),
+            ]
         ),
         dbc.Row(dbc.Col(filter_card, className="mb-3")),
         dbc.Row(dbc.Col(table_card, className="mb-3")),

@@ -1,5 +1,3 @@
-"""Pomocné funkcie na tvorbu grafov (Plotly)."""
-
 import plotly.graph_objects as go
 
 from backend.data_service import SPECIES
@@ -7,7 +5,8 @@ from backend.data_service import SPECIES
 BAR_COLOR = "#2c7fb8"
 
 
-def _base_layout(fig):
+def _layout(fig):
+    # spolocne nastavenie vzhladu pre oba grafy
     fig.update_layout(
         title="Počet vyfiltrovaných kvetov podľa druhu",
         xaxis_title="Druh (species)",
@@ -23,8 +22,8 @@ def _base_layout(fig):
 
 
 def species_bar_figure(counts):
-    """Stĺpcový graf počtov druhov s hodnotou nad každým stĺpcom."""
     values = [counts.get(s, 0) for s in SPECIES]
+
     fig = go.Figure(
         go.Bar(
             x=SPECIES,
@@ -35,10 +34,16 @@ def species_bar_figure(counts):
             hovertemplate="%{x}: %{y} záznamov<extra></extra>",
         )
     )
-    _base_layout(fig)
-    # Rezerva nad stĺpcami, aby sa hodnoty zmestili; pri nulách celočíselná os
-    top = max(values) * 1.2 if max(values) > 0 else 5
+    _layout(fig)
+
+    # bez rezervy nad stlpcami sa cisla orezu, pri malych poctoch chcem
+    # celociselnu os
+    if max(values) > 0:
+        top = max(values) * 1.2
+    else:
+        top = 5
     fig.update_yaxes(range=[0, top], dtick=1 if top <= 10 else None)
+
     if sum(values) == 0:
         fig.add_annotation(
             text="Žiadny záznam nevyhovuje zvoleným filtrom",
@@ -49,9 +54,9 @@ def species_bar_figure(counts):
 
 
 def empty_figure(message):
-    """Prázdny graf s oznamom (stav pred načítaním dát)."""
+    # graf pred nacitanim dat - prazdny, len s textom v strede
     fig = go.Figure()
-    _base_layout(fig)
+    _layout(fig)
     fig.update_xaxes(showticklabels=False)
     fig.update_yaxes(showticklabels=False, showgrid=False)
     fig.add_annotation(
