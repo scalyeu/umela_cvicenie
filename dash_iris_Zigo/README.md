@@ -29,7 +29,3 @@ Sú tam 3 callbacky:
 3. show_page_info - ukazuje, na ktorej strane tabuľky sa práve je.
 
 Dáta sú uložené v premennej _df v data_service.py, dcc.Store som nepoužil.
-
-## Navyše
-
-Pridal som pole na zadanie vlastnej URL k CSV súboru (skontroluje sa, či má správne stĺpce) a tlačidlo Obnoviť filtre, ktoré vráti slidery na začiatok.
