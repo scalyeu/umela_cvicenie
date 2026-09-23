@@ -1,46 +1,35 @@
 # Iris Data Explorer
 
-Dashboard v Plotly Dash nad datasetom Iris. Dataset sa stiahne až po stlačení
-tlačidla **Načítať dáta**, potom sa dá filtrovať štyrmi RangeSlidermi.
-Výsledok filtra sa naraz prejaví v informačnom paneli, v stĺpcovom grafe
-aj v tabuľke.
+Dashboard v Plotly Dash nad datasetom Iris. Po spustení sa dáta ešte nenačítajú, stiahnu sa až keď sa klikne na Načítať dáta. Potom sa dá filtrovať cez štyri slidery (sepal length, sepal width, petal length, petal width) a podľa toho sa mení počet záznamov, graf aj tabuľka.
 
 ## Spustenie
 
-```bash
+```
 pip install -r requirements.txt
 python app.py
 ```
 
-Aplikácia potom beží na http://127.0.0.1:8050
+Potom otvoriť http://127.0.0.1:8050
 
-## Súbory
+## Štruktúra
 
-- `app.py` - vytvorenie Dash aplikácie, Bootstrap téma, navbar
-- `pages/home.py` - rozloženie stránky (karty, slidery, tabuľka)
-- `backend/data_service.py` - stiahnutie CSV, kontrola stĺpcov, filtrovanie
-- `callbacks/iris_callbacks.py` - tri callbacky
-- `callbacks/figures.py` - stĺpcový graf a prázdny graf
-- `assets/styles.css` - pár CSS úprav
+- app.py - hlavný súbor, vytvorí sa tu aplikácia a navbar
+- pages/home.py - layout stránky
+- backend/data_service.py - načítanie CSV a filtrovanie
+- callbacks/iris_callbacks.py - callbacky
+- callbacks/figures.py - graf
+- assets/styles.css - css
 
 ## Callbacky
 
-**1. `load_or_reset`** - reaguje na obe tlačidlá. Input: `load-button`,
-`reset-button`, State: CSV URL. Nastavuje stav, celkový počet záznamov
-a min/max/value/disabled všetkých štyroch sliderov. Pri chybnej URL vypíše
-hlášku a slidery ostanú vypnuté.
+Sú tam 3 callbacky:
 
-**2. `apply_filters`** - Input: hodnoty štyroch sliderov. Zavolá
-`filter_data()` a z jedného výsledku naplní počet, podiel, graf aj tabuľku,
-plus texty s aktuálnymi rozsahmi nad slidermi.
+1. load_or_reset - spustí sa po kliknutí na Načítať dáta alebo Obnoviť filtre. Načíta dáta z URL a nastaví slidery na min a max hodnoty z dát. Ak sa CSV nepodarí načítať, vypíše chybu a slidery ostanú vypnuté.
+2. apply_filters - spustí sa pri zmene sliderov, vyfiltruje dáta a aktualizuje počet, percentá, graf a tabuľku.
+3. show_page_info - ukazuje, na ktorej strane tabuľky sa práve je.
 
-**3. `show_page_info`** - Input: `page_current` a dáta tabuľky,
-State: `page_size`. Vypíše, na ktorej strane z koľkých sa práve je.
+Dáta sú uložené v premennej _df v data_service.py, dcc.Store som nepoužil.
 
-Dáta sú uložené v module `backend/data_service.py` v premennej `_df`,
-`dcc.Store` som nepoužil.
+## Navyše
 
-## Čo som pridal navyše
-
-- pole na vlastnú CSV URL (kontroluje sa, či súbor má potrebné stĺpce)
-- tlačidlo *Obnoviť filtre*, ktoré vráti slidery na celý rozsah dát
+Pridal som pole na zadanie vlastnej URL k CSV súboru (skontroluje sa, či má správne stĺpce) a tlačidlo Obnoviť filtre, ktoré vráti slidery na začiatok.
